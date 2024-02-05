@@ -7,11 +7,13 @@ document.addEventListener('click', function () {
 
 
 
-var origBoard;
-var playerScore = 0;
-var aiScore = 0;
-const huPlayer = 'X';
-const aiPlayer = 'O';
+  <script>
+    var origBoard;
+    var playerScore = 0;
+    var aiScore = 0;
+    var tieScore = 0;
+const huPlayer = 'O';
+const aiPlayer = 'X';
 const winCombos = [
   [1, 6],
   [4, 11],
@@ -44,7 +46,6 @@ let difficulty = "easy"; // Default difficulty
 let gameIsOver = false; // Flag to track if the game is over
 
 function startGame() {
-    backgroundMusic.play();
   toggleButton();
   document.querySelector(".endgame").style.display = "none";
   document.getElementById("butbut").innerText = 'Clear Board';
@@ -61,7 +62,7 @@ function startGame() {
   }
 
 
-  // Get selected difficulty
+ // Get selected difficulty
   difficulty = document.getElementById("difficulty").value;
 
   if (difficulty === "easy") {
@@ -93,8 +94,6 @@ function turnClick(square) {
 }
 
 function turnClickEasy(square) {
-    humanTurnSound.play();    
-    aiTurnSound.play();
   if (!gameIsOver && typeof origBoard[square.target.id] == 'number') {
     turn(square.target.id, huPlayer);
     if (!checkWin(origBoard, huPlayer) && !checkTie()) turn(bestSpotEasy(), aiPlayer);
@@ -102,8 +101,6 @@ function turnClickEasy(square) {
 }
 
 function turnClickMedium(square) {
-    humanTurnSound.play();    
-    aiTurnSound.play();
   if (!gameIsOver && typeof origBoard[square.target.id] == 'number') {
     turn(square.target.id, huPlayer);
     if (!checkWin(origBoard, huPlayer) && !checkTie()) turn(bestSpotMedium(), aiPlayer);
@@ -111,20 +108,17 @@ function turnClickMedium(square) {
 }
 
 function turn(squareId, player) {
-    humanTurnSound.play();    
-    aiTurnSound.play();
-
-
-    origBoard[squareId] = player;
-    document.getElementById(squareId).innerText = player;
-    let gameWon = checkWin(origBoard, player);
-    if (gameWon) {
-      gameOver(gameWon);
-    } else {
-      // Check for a tie after each turn
-      checkTie();
-    }
+  origBoard[squareId] = player;
+  document.getElementById(squareId).innerText = player;
+  let gameWon = checkWin(origBoard, player);
+  if (gameWon) {
+    gameOver(gameWon);
+  } else {
+    // Check for a tie after each turn
+    checkTie();
   }
+}
+
 function checkWin(board, player) {
   let plays = board.reduce((a, e, i) =>
     (e === player) ? a.concat(i) : a, []);
@@ -154,15 +148,16 @@ function gameOver(gameWon) {
 function declareWinner(who) {
   document.querySelector(".endgame").style.display = "block";
 
-  // Check if playerScore or aiScore has reached 5
+  // Check if playerScore, aiScore, or tieScore has reached 5
   if (playerScore === 5) {
     document.querySelector(".endgame .text").innerText = "You are the ULTIMATE CHAMPION!";
     document.getElementById("butbut").innerText = "Play Again";
-
   } else if (aiScore === 5) {
     document.querySelector(".endgame .text").innerText = "You are the ULTIMATE LOSER!";
     document.getElementById("butbut").innerText = "Play Again";
-
+  } else if (tieScore === 5) {
+    document.querySelector(".endgame .text").innerText = "It's a TIE!";
+    document.getElementById("butbut").innerText = "Play Again";
   } else {
     document.querySelector(".endgame .text").innerText = who;
   }
@@ -170,11 +165,14 @@ function declareWinner(who) {
 function updateScores() {
   document.getElementById("playerScore").innerText = playerScore;
   document.getElementById("aiScore").innerText = aiScore;
+  document.getElementById("tieScore").innerText = tieScore;
 }
+
 function resetScores() {
-  // Reset playerScore and aiScore to 0
+  // Reset playerScore, aiScore, and tieScore to 0
   playerScore = 0;
   aiScore = 0;
+  tieScore = 0;
 
   // Call the function to update the displayed scores
   updateScores();
@@ -182,11 +180,12 @@ function resetScores() {
 function updateScore(player) {
   if (player == huPlayer) {
     playerScore++;
-    document.getElementById("playerScore").innerText = playerScore;
   } else if (player == aiPlayer) {
     aiScore++;
-    document.getElementById("aiScore").innerText = aiScore;
+  } else {
+    tieScore++;
   }
+  updateScores();
 }
 
 function emptySquares() {
@@ -220,15 +219,17 @@ function bestSpotMedium() {
 }
 
 function checkTie() {
-  if (emptySquares().length == 0) {
+  if (emptySquares().length == 0 && !gameIsOver) {
     gameIsOver = true; // Set the game over flag
     for (var i = 0; i < cells.length; i++) {
       cells[i].style.backgroundColor = "green";
       cells[i].removeEventListener('click', turnClick, false);
     }
-    declareWinner("Tie Game!")
+    declareWinner("Tie Game!");
+    updateScore("Tie");
     return true;
   }
   return false;
 }
+
 
